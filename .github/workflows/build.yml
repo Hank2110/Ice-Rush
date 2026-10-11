@@ -7,7 +7,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           unzip -o IceRush_Android_project.zip
-          find Music -name '*.zip' -exec unzip -o {} \;
+          find . -iname '*.zip' ! -name 'IceRush_Android_project.zip' -exec unzip -o {} \;
       - run: |
           ID=$(tr -d ' \r\n' < community.txt 2>/dev/null || true)
           if [ -n "$ID" ]; then sed -i "s/__COMMUNITY_ID__/$ID/" IceRush_Android/app/src/main/assets/index.html; fi
