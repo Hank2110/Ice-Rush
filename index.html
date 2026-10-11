@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ice Labs Studio</title>
+<style>
+:root{--card:rgba(13,42,82,.72);--line:#2a6fb5;--ice:#6ee1ff;--tx:#eaf6ff;--mut:#9cc3e6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{color-scheme:dark;scroll-padding-top:env(safe-area-inset-top,0px);background:#050c24}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0,#14508f 0,#0a2a58 40%,#050c24 100%) fixed;color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.55;overflow-x:hidden}
+.wrap{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:20px 18px 60px}
+.sf{position:fixed;top:-12px;border-radius:50%;background:#fff;opacity:.55;pointer-events:none;z-index:0;animation:fall linear infinite}
+@keyframes fall{to{transform:translateY(110vh) translateX(30px)}}
+.hero{text-align:center;padding:26px 0 10px}
+.brand{font-weight:800;letter-spacing:6px;font-size:15px;color:var(--ice);margin-bottom:6px}
+.hero svg{width:min(320px,80%);height:auto;overflow:visible}
+.bob{transform-box:fill-box;transform-origin:center;animation:bob 2.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-12deg)}50%{transform:translateY(-12px) rotate(-5deg)}}
+h1{margin:6px 0 0;font-size:clamp(44px,13vw,76px);line-height:1;letter-spacing:3px;font-weight:800;background:linear-gradient(180deg,#fff 20%,#6ee1ff 90%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(110,225,255,.45))}
+.ver{display:inline-block;margin:12px 0 4px;padding:4px 16px;border-radius:99px;font-weight:700;color:#06203f;background:var(--ice);box-shadow:0 0 18px rgba(110,225,255,.6)}
+.sub{margin:6px 0 20px;color:var(--mut)}
+.row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.btn{display:inline-block;border:0;border-radius:12px;padding:12px 22px;font:inherit;font-weight:700;background:linear-gradient(180deg,#8eeaff,#43c6f0);color:#06203f;text-decoration:none;cursor:pointer;box-shadow:0 4px 0 #1d7fb0}
+.btn.alt{background:transparent;color:var(--ice);border:2px solid var(--ice);box-shadow:none}
+.btn.off{background:#27507f;color:#9cc3e6;box-shadow:none;cursor:default}
+.btn.del{background:transparent;color:#ff9aa8;border:1px solid #6b2a3a;padding:6px 12px;margin-left:8px;font-weight:400;box-shadow:none}
+h2{font-size:22px;margin:42px 0 14px;color:var(--ice);letter-spacing:1px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;backdrop-filter:blur(6px)}
+.card h3{margin:0 0 6px;font-size:19px}
+.card p{margin:0 0 12px;color:var(--mut)}
+.tag{display:inline-block;font-size:12px;font-weight:700;color:#06203f;background:var(--ice);border-radius:99px;padding:2px 10px;margin-left:8px;vertical-align:middle}
+.feat{border-top:4px solid var(--ice)}
+.links{display:flex;flex-wrap:wrap;gap:10px}
+.empty{color:var(--mut);font-style:italic}
+.own{border-style:dashed;margin-top:34px}
+.own h3{color:var(--ice)}
+.own input{width:100%;margin:0 0 8px;padding:10px;border-radius:8px;border:1px solid var(--line);background:#071a38;color:var(--tx);font:inherit}
+footer{margin-top:44px;text-align:center;color:var(--mut);font-size:13px}
+@media (prefers-reduced-motion:reduce){.sf,.bob{animation:none}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script type="application/json" id="data">{"games":[{"n":"Новая игра","d":"Ритм-платформер в стиле Geometry Dash: прыгай через шипы, проходи уровни и побеждай боссов.","u":"https://github.com/Hank2110/Ice-Rush","t":"","b":"Открыть проект"}],"links":[{"n":"GitHub","u":"https://github.com/Hank2110/Ice-Rush"},{"n":"Android-проект (.zip)","u":"https://github.com/Hank2110/Ice-Rush/blob/main/IceRush_Android_project.zip"}]}</script>
+<script>
+var app=document.getElementById('app');
+var state=JSON.parse(document.getElementById('data').textContent);
+var isOwner=false,art=null;
+function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+function safe(u){try{var x=new URL(u);return(x.protocol==='https:'||x.protocol==='http:')?x.href:''}catch(e){return ''}}
+function link(url,text,cls){var s=safe(url);if(!s)return el('span','btn off',text);var a=el('a',cls||'btn',text);a.href=s;a.target='_blank';a.rel='noopener noreferrer';return a}
+async function save(){
+  if(!art)return;
+  var c=document.documentElement.cloneNode(true);
+  c.querySelector('#app').replaceChildren();
+  c.querySelector('#data').textContent=JSON.stringify(state).replace(/</g,'\\u003c');
+  try{await art.publish('<!DOCTYPE html>\n'+c.outerHTML)}catch(e){if(e&&e.code!=='conflict')alert('Не удалось сохранить: '+((e&&e.code)||e.message))}
+}
+function field(ph){var i=document.createElement('input');i.placeholder=ph;return i}
+var HERO='<svg viewBox="0 0 240 190" aria-hidden="true"><g stroke="#6ee1ff" stroke-linecap="round" stroke-width="5"><line x1="14" y1="50" x2="64" y2="50" opacity=".9"/><line x1="30" y1="68" x2="76" y2="68" opacity=".6"/><line x1="8" y1="86" x2="58" y2="86" opacity=".4"/></g><g class="bob"><rect x="80" y="24" width="84" height="84" rx="16" fill="#1668c8"/><rect x="85" y="29" width="74" height="74" rx="12" fill="#6ee1ff"/><rect x="94" y="38" width="56" height="56" rx="8" fill="#c4f3ff"/><rect x="108" y="52" width="9" height="16" rx="2" fill="#0a2a5a"/><rect x="128" y="52" width="9" height="16" rx="2" fill="#0a2a5a"/><rect x="108" y="76" width="30" height="5" rx="2" fill="#0a2a5a"/></g><polygon points="0,170 20,138 40,170" fill="#eaf8ff"/><polygon points="40,170 60,138 80,170" fill="#eaf8ff"/><polygon points="80,170 100,138 120,170" fill="#eaf8ff"/><polygon points="120,170 140,138 160,170" fill="#eaf8ff"/><polygon points="160,170 180,138 200,170" fill="#eaf8ff"/><polygon points="200,170 220,138 240,170" fill="#eaf8ff"/><rect x="0" y="170" width="240" height="8" rx="3" fill="#6ee1ff"/></svg>';
+function render(){
+  app.replaceChildren();
+  for(var i=0;i<26;i++){var s=el('div','sf');var z=2+Math.random()*5;s.style.cssText='left:'+(Math.random()*100)+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(7+Math.random()*10)+'s;animation-delay:-'+(Math.random()*14)+'s';app.appendChild(s)}
+  var w=el('div','wrap');
+  var hero=el('div','hero');hero.insertAdjacentHTML('beforeend',HERO);
+  hero.appendChild(el('h1','','ICE LABS'));var st=el('div','brand','STUDIO');st.style.cssText='margin:10px 0 0;font-size:22px;letter-spacing:12px;padding-left:12px';hero.appendChild(st);
+  
+  hero.appendChild(el('p','sub','Игры от Ice Labs Studio'));
+  var r=el('div','row');
+  r.appendChild(link('https://github.com/Hank2110/Ice-Rush','Открыть на GitHub'));
+  r.appendChild(link('https://github.com/Hank2110/Ice-Rush/blob/main/IceRush_Android_project.zip','Android-проект (.zip)','btn alt'));
+  hero.appendChild(r);w.appendChild(hero);
+  w.appendChild(el('h2','','О ИГРЕ'));
+  var f=el('div','grid');
+  [['Dash-уровни','Прыгай, уворачивайся от шипов и попадай в ритм.'],['Платформер с боссами','Отдельные уровни-платформеры и бои с боссами.'],['Редактор уровней','Создавай свои уровни и проходи их.']].forEach(function(x){var c=el('div','card feat');c.appendChild(el('h3','',x[0]));c.appendChild(el('p','',x[1]));f.appendChild(c)});
+  w.appendChild(f);
+  w.appendChild(el('h2','','ИГРЫ СТУДИИ'));
+  var g=el('div','grid');
+  if(!state.games.length)g.appendChild(el('p','empty','Пока игр нет'));
+  state.games.forEach(function(x,i){
+    var c=el('div','card');var t=el('h3','',x.n);if(x.t)t.appendChild(el('span','tag',x.t));
+    c.appendChild(t);if(x.d)c.appendChild(el('p','',x.d));
+    c.appendChild(link(x.u,x.u?(x.b||'Играть'):'Скоро'));
+    if(isOwner){var d=el('button','btn del','Удалить');d.onclick=function(){state.games.splice(i,1);save()};c.appendChild(d)}
+    g.appendChild(c)
+  });
+  w.appendChild(g);
+  w.appendChild(el('h2','','ССЫЛКИ'));
+  var l=el('div','links');
+  if(!state.links.length)l.appendChild(el('p','empty','Ссылок пока нет'));
+  state.links.forEach(function(x,i){
+    var box=el('span');box.appendChild(link(x.u,x.n,'btn alt'));
+    if(isOwner){var d=el('button','btn del','×');d.onclick=function(){state.links.splice(i,1);save()};box.appendChild(d)}
+    l.appendChild(box)
+  });
+  w.appendChild(l);
+  if(isOwner){
+    var o=el('div','card own');o.appendChild(el('h3','','Режим владельца: добавить игру'));
+    var n=field('Название игры'),d=field('Описание'),u=field('Ссылка на игру (https://...)'),t=field('Метка (например: v0.3, Android)');
+    [n,d,u,t].forEach(function(i){o.appendChild(i)});
+    var b=el('button','btn','Добавить игру');
+    b.onclick=function(){if(!n.value.trim()){n.focus();return}state.games.push({n:n.value.trim(),d:d.value.trim(),u:safe(u.value.trim()),t:t.value.trim(),b:''});save()};
+    o.appendChild(b);
+    o.appendChild(el('h3','','Добавить ссылку'));
+    var ln=field('Название (TikTok, YouTube...)'),lu=field('Ссылка (https://...)');
+    o.appendChild(ln);o.appendChild(lu);
+    var lb=el('button','btn','Добавить ссылку');
+    lb.onclick=function(){var s=safe(lu.value.trim());if(!ln.value.trim()||!s){(ln.value.trim()?lu:ln).focus();return}state.links.push({n:ln.value.trim(),u:s});save()};
+    o.appendChild(lb);w.appendChild(o)
+  }
+  w.appendChild(el('footer','','© Ice Labs Studio'));
+  app.appendChild(w)
+}
+render();
+(async function(){
+  try{
+    if(typeof claude==='undefined'||!claude.use)return;
+    var u=await claude.use('user');
+    art=await claude.use('artifact');
+    isOwner=!!(u&&u.isOwner()&&art);
+    if(isOwner)render()
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
