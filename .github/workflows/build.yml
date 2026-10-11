@@ -5,7 +5,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: unzip IceRush_Android_project.zip
+      - run: for z in IceRush_Android_project.zip Music/music_part*.zip; do unzip -o "$z"; done
+      - run: |
+          ID=$(tr -d ' \r\n' < community.txt 2>/dev/null || true)
+          if [ -n "$ID" ]; then sed -i "s/__COMMUNITY_ID__/$ID/" IceRush_Android/app/src/main/assets/index.html; fi
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: 17}
       - uses: gradle/actions/setup-gradle@v4
