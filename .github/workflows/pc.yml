@@ -10,17 +10,20 @@ jobs:
           python-version: '3.12'
       - name: Unpack project and music
         shell: bash
+        env:
+          PYTHONUTF8: '1'
+          PYTHONIOENCODING: 'utf-8'
         run: |
           python - <<'PY'
           import zipfile, glob, os, shutil, sys
-          print('Файлы в корне:', sorted(os.listdir('.')))
+          print('Files in repo root:', sorted(os.listdir('.')))
           proj = glob.glob('**/IceRush_PC_project.zip', recursive=True)
           if not proj:
-              print('ОШИБКА: IceRush_PC_project.zip не найден в репозитории. Загрузите его: Add file > Upload files.')
+              print('ERROR: IceRush_PC_project.zip not found in the repository. Upload it: Add file > Upload files.')
               sys.exit(1)
           zipfile.ZipFile(proj[0]).extractall('.')
           musics = sorted(glob.glob('**/music_part*.zip', recursive=True))
-          print('Архивы музыки:', musics)
+          print('Music archives:', musics)
           for z in musics:
               zipfile.ZipFile(z).extractall('.')
           os.makedirs('IceRush_PC/app/music', exist_ok=True)
@@ -28,7 +31,7 @@ jobs:
           for f in glob.glob('IceRush_Android/app/src/main/assets/music/*.mp3'):
               shutil.copy(f, 'IceRush_PC/app/music/')
               n += 1
-          print('Скопировано треков:', n)
+          print('Tracks copied:', n)
           PY
       - uses: actions/setup-node@v4
         with:
