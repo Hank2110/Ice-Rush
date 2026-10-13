@@ -1,0 +1,28 @@
+name: Build PC
+on: workflow_dispatch
+jobs:
+  win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack project and music
+        shell: bash
+        run: |
+          7z x -y IceRush_PC_project.zip > /dev/null
+          for z in Music/music_part*.zip; do 7z x -y "$z" > /dev/null; done
+          mkdir -p IceRush_PC/app/music
+          cp IceRush_Android/app/src/main/assets/music/*.mp3 IceRush_PC/app/music/ || echo "no music found"
+          ls IceRush_PC/app/music | wc -l
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build Windows exe
+        shell: bash
+        working-directory: IceRush_PC
+        run: |
+          npm install
+          npx electron-builder --win portable --x64 --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: IceRush-Windows
+          path: IceRush_PC/dist/*.exe
